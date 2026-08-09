@@ -19,15 +19,15 @@ wycinek kontekstu (nic spoza deklaracji nie da się przeczytać), z `run` wychod
 mapa wartości (nic spoza `provides` nie da się zapisać).
 
 Jak wtyczka WordPressa wymaga WordPressa, tak klocek wymaga hosta: importy
-`../../../src/*` to kontrakt z nim (model danych: `case-context.mjs`, wspólny
-język warunków: `conditions.mjs`). Testy klocków uruchamia host — `npm test`
+`../../../src/*` to kontrakt z nim (model danych: `src/case-context.mjs`
+hosta, wspólny język warunków: `src/conditions.mjs`). Testy klocków uruchamia host — `npm test`
 w jego korzeniu.
 
 ## Nowy klocek
 
 1. Przeczytaj model: `models/<id>.json` — każdy korzeń z opisem, kto w niego
    pisze i co znaczy `null`, dowód, `text.safe`.
-2. Przeczytaj sekcję „Kontrakt bloku" w `CLAUDE.md` hosta.
+2. Przeczytaj sekcję „Kontrakt bloku" w `CLAUDE.md` hosta (jego korzeń).
 3. Katalog `blocks/<nazwa>/` + linia w `blocks/index.mjs`.
 4. W hoście: `npm test` i `node src/cli.mjs --check case-types/*.json`.
 
