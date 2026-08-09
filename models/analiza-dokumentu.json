@@ -1,0 +1,56 @@
+{
+  "id": "analiza-dokumentu",
+  "wersja": 1,
+  "opis": "Analiza wgranego dokumentu: treść → fakty z dowodami → wyliczenia → naruszenia → pismo. Kontekst to drzewo JSON adresowane ścieżką korzeń.liść (mechanika: src/case-context.mjs). Blok deklaruje model polem `model` i rozmawia wyłącznie ścieżkami z tego słownika.",
+  "korzenie": {
+    "answers": {
+      "pisze": "formularz",
+      "opis": "Odpowiedzi człowieka. Bloki tu nie piszą nigdy — to jedyne, co odróżnia to, co ktoś wpisał, od tego, co system odczytał z dokumentu."
+    },
+    "source": {
+      "pisze": "formularz",
+      "opis": "Bajty wgranych plików (pola `form` typu `plik`). Jak `answers.` — wyłącznie formularz."
+    },
+    "text": {
+      "pisze": "blok",
+      "opis": "Treść dokumentu. `raw` przed pseudonimizacją — nie wolno jej wysłać do modelu językowego; `safe` po pseudonimizacji — jedyna treść, która ma prawo wyjść na zewnątrz. `safe` daje wyłącznie blok pseudonimizacji, więc pipeline wołający model bez pseudonimizacji nie przechodzi kontroli ułożenia.",
+      "liscie": ["raw", "safe"]
+    },
+    "facts": {
+      "pisze": "blok",
+      "opis": "Fakty odczytane z treści, klucz per pole (`facts.kwota_kredytu`). Wartość `null` znaczy: dokument tego nie podaje — to informacja, nie brak danych."
+    },
+    "evidence": {
+      "pisze": "blok",
+      "opis": "Dowód faktu o tym samym kluczu: obiekt {cytat, strona} albo `null`. Cytat jest weryfikowany z tekstem — zmyślony odpada, wartość zostaje z jawnie pustym dowodem. Konsumenci czytają dowody miękko (`reads`): fakt bez cytatu to sygnał do ręcznej weryfikacji, nie błąd ułożenia."
+    },
+    "classification": {
+      "pisze": "blok",
+      "opis": "Czy dokument wygląda na ten rodzaj sprawy: dopasowanie słów kluczowych, trafione, brakujące."
+    },
+    "qualification": {
+      "pisze": "blok",
+      "opis": "Wynik pytań kwalifikacyjnych. Odrzucenie sprawy to werdykt (`error.rejections`), nie awaria."
+    },
+    "pseudonymization": {
+      "pisze": "blok",
+      "opis": "Statystyka podstawień i trafienia po podmianie. Sama treść idzie do `text.safe`, nie tu — ten korzeń jest raportem, nie materiałem."
+    },
+    "calculations": {
+      "pisze": "blok",
+      "opis": "Kwoty liczone kodem, nigdy modelem językowym — idą do pozwu i biegły je przeliczy. Kwota z umowy nadpisuje ostrożną rekonstrukcję tylko z potwierdzonym cytatem w `evidence`."
+    },
+    "deadline": {
+      "pisze": "blok",
+      "opis": "Termin zawity: status, warianty wykładni, dzień wyliczenia. Liczony kodem z `facts`."
+    },
+    "checklist": {
+      "pisze": "blok",
+      "opis": "Naruszenia z listy pozycji (pozycje to dane w rodzaju sprawy, nie kod): findings z kodem, wagą, podstawą prawną i dowodem."
+    },
+    "statement": {
+      "pisze": "blok",
+      "opis": "Szkic pisma z szablonu. Czego pipeline nie wie, stoi jako [DO UZUPEŁNIENIA] — blok niczego nie zmyśla."
+    }
+  }
+}
