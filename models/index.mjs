@@ -14,8 +14,8 @@
  */
 import analizaDokumentu from "./analiza-dokumentu.json" with { type: "json" };
 
-// ponytail: jak rejestr klocków — ręczny, deploy przy nowym modelu.
-// Upgrade razem z tabelą blocks.
+// ponytail: modele tylko wbudowane — kancelaria nie doda własnego modelu bez
+// deployu. Upgrade: tabela tenant_models przy pierwszym cudzym modelu.
 export default {
   "analiza-dokumentu": analizaDokumentu,
 };
