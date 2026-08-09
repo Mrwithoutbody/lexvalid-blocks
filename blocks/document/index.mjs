@@ -25,6 +25,22 @@ import { extractText, getDocumentProxy } from "unpdf";
  */
 const MIN_CHARS_PER_PAGE = 80;
 
+/**
+ * Znacznik strony przy treści: z niego ekstrakcja podaje stronę cytatu, a bez
+ * strony dowodu nie da się odszukać w umowie na biurku. Ten sam kształt składa
+ * przeglądarka — i przy OCR-ze, i przy warstwie tekstowej.
+ */
+const STRONA = /=== Strona \d+ ===/g;
+
+/** Odczyt warstwy tekstowej z bajtów — ścieżka dla CLI i testów. */
+async function czytajPdf(bytes) {
+  // pdf.js odłącza przekazany bufor, więc pracujemy na kopii.
+  const pdf = await getDocumentProxy(new Uint8Array(bytes).slice());
+  const { text } = await extractText(pdf, { mergePages: false });
+
+  return text.map((page, i) => `=== Strona ${i + 1} ===\n${page}`).join("\n\n");
+}
+
 export default {
   model: "analiza-dokumentu",
   name: "Dokument sprawy",
@@ -40,18 +56,24 @@ export default {
   // `document_ocr` NIE jest wymagane: umowa z warstwą tekstową go nie ma i to
   // nie jest brak danych. Blok sięga po nie miękko, jak checklista po dowody.
   requires: ["source.document"],
-  reads: ["source.document_ocr"],
+  reads: ["source.document_ocr", "source.document_text"],
   provides: ["text.raw"],
   // Bez `report`: treść umowy to materiał analizy, nie jej wynik.
 
   form: () => [
     { id: "document", label: "Dokument PDF", type: "plik" },
-    // `wypelnia` mówi interfejsowi, że o to pola nie pyta się człowieka —
-    // tekst ze skanu składa przeglądarka. Deklaracja stoi tutaj, bo to blok
-    // wie, co konsumuje; player nie zna nazwy żadnego pola z osobna.
+    // `wypelnia` mówi interfejsowi, że o te pola nie pyta się człowieka —
+    // składa je przeglądarka. Deklaracja stoi tutaj, bo to blok wie, co
+    // konsumuje; player nie zna nazwy żadnego pola z osobna.
     {
       id: "document_ocr",
       label: "Tekst rozpoznany ze skanu",
+      type: "plik",
+      wypelnia: "przegladarka",
+    },
+    {
+      id: "document_text",
+      label: "Warstwa tekstowa odczytana w przeglądarce",
       type: "plik",
       wypelnia: "przegladarka",
     },
@@ -74,17 +96,28 @@ export default {
       };
     }
 
-    // pdf.js odłącza przekazany bufor, więc pracujemy na kopii.
-    const pdf = await getDocumentProxy(new Uint8Array(ctx.source.document).slice());
-    const { totalPages, text } = await extractText(pdf, { mergePages: false });
+    // Warstwa tekstowa odczytana w przeglądarce — ta sama robota, której nie ma
+    // po co robić dwa razy: przeglądarka i tak otwiera PDF-a, żeby sprawdzić,
+    // czy nie jest skanem. Serwer nie ufa jej za to na słowo: próg poniżej
+    // rozstrzyga tak samo, jak przy odczycie własnym, a oryginał leży w kubełku,
+    // więc treść zawsze da się odtworzyć i porównać.
+    const wPrzegladarce = ctx.source.document_text
+      ? new TextDecoder().decode(ctx.source.document_text)
+      : null;
 
-    // Próg liczy się z samej treści, zanim dojdą znaczniki — inaczej znaczniki
+    // pdf.js odłącza przekazany bufor, więc pracujemy na kopii. Ta ścieżka
+    // zostaje dla CLI i testów — tam przeglądarki nie ma.
+    const odczytane = wPrzegladarce ?? (await czytajPdf(ctx.source.document));
+
+    // Strony liczymy ze znaczników, bo przy tekście z przeglądarki to jedyne,
+    // co je niesie — a próg jest na stronę.
+    const totalPages = Math.max(1, odczytane.split(STRONA).length - 1);
+
+    // Próg liczy się z samej treści, bez znaczników — inaczej znaczniki
     // podbijałyby licznik i skan wyglądałby na dokument z tekstem.
-    const contentChars = text.join("").replace(/\s/g, "").length;
+    const contentChars = odczytane.replace(STRONA, "").replace(/\s/g, "").length;
 
-    // Znacznik strony przy treści: z niego ekstrakcja podaje stronę cytatu,
-    // a bez strony dowodu nie da się odszukać w umowie na biurku.
-    const values = { "text.raw": text.map((page, i) => `=== Strona ${i + 1} ===\n${page}`).join("\n\n") };
+    const values = { "text.raw": odczytane };
 
     if (contentChars < MIN_CHARS_PER_PAGE * totalPages) {
       // Odczytana warstwa idzie razem z błędem: za mało jej na analizę, ale
@@ -94,6 +127,7 @@ export default {
       throw scan;
     }
 
-    return { note: `${kB} kB, ${totalPages} str., ${contentChars} znaków warstwy tekstowej`, values };
+    const skad = wPrzegladarce ? " z przeglądarki" : "";
+    return { note: `${kB} kB, ${totalPages} str., ${contentChars} znaków warstwy tekstowej${skad}`, values };
   },
 };

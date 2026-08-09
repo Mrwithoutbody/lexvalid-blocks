@@ -113,3 +113,46 @@ test("pusty wynik OCR zatrzymuje sprawę, zamiast udawać pustą umowę", async 
 
   await assert.rejects(() => runStep(block, ctx), /ani jednego znaku/);
 });
+
+// ── warstwa tekstowa z przeglądarki ──────────────────────────────────────
+
+const tekstem = (s) => new TextEncoder().encode(s);
+const STRONA_TEKSTU = `=== Strona 1 ===\n${"Umowa pożyczki, RRSO 11,03%. ".repeat(6)}`;
+
+test("warstwa tekstowa z przeglądarki zastępuje odczyt na serwerze", async () => {
+  const ctx = {
+    source: {
+      // Bajty PDF-a i tak lecą do kubełka; tekstu z nich już się nie wyjmuje.
+      document: new Uint8Array(8),
+      document_text: tekstem(STRONA_TEKSTU),
+    },
+  };
+  const { note } = await runStep(block, ctx);
+
+  assert.match(note, /z przeglądarki/);
+  assert.equal(ctx.text.raw, STRONA_TEKSTU);
+});
+
+test("serwer stosuje próg także do tekstu z przeglądarki", async () => {
+  // Przeglądarka niczego nie rozstrzyga: cienka warstwa to skan i tu zapada
+  // ta sama decyzja, co przy odczycie własnym.
+  const chudy = { source: { document: new Uint8Array(8), document_text: tekstem("=== Strona 1 ===\nAneks") } };
+
+  await assert.rejects(() => runStep(block, chudy), /bez warstwy tekstowej/);
+});
+
+test("OCR skanu bije warstwę tekstową z przeglądarki", async () => {
+  // Gdy przeglądarka przysłała OCR, znaczy że warstwy nie było — nawet jeśli
+  // przy okazji doleciał jej strzęp.
+  const ctx = {
+    source: {
+      document: new Uint8Array(8),
+      document_ocr: tekstem("=== Strona 1 ===\nTreść ze skanu"),
+      document_text: tekstem(STRONA_TEKSTU),
+    },
+  };
+  const { note } = await runStep(block, ctx);
+
+  assert.match(note, /skan po OCR/);
+  assert.match(ctx.text.raw, /Treść ze skanu/);
+});
