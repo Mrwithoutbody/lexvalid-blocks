@@ -37,7 +37,7 @@ function stronaBezTekstu() {
 }
 
 test("umowa z warstwą tekstową przechodzi", async () => {
-  const ctx = { source: { document: readFileSync(new URL("../../test-contracts/skd-konsumencki.pdf", import.meta.url)) } };
+  const ctx = { source: { document: readFileSync(new URL("../../../test-contracts/skd-konsumencki.pdf", import.meta.url)) } };
   const { note } = await runStep(block, ctx);
 
   assert.match(note, /warstwy tekstowej/);
