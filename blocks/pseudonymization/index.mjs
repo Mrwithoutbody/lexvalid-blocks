@@ -1,3 +1,6 @@
+// ponytail: pseudonimizacja regexowa — nietypowe nazwisko/adres przechodzi
+// (uwaga o tym jedzie do raportu). Upgrade: lokalny NER, gdy wzorce
+// przepuszczą coś na realnej umowie.
 import { under } from "../../../src/case-context.mjs";
 import { PATTERNS, scan, splitNames } from "./patterns.mjs";
 

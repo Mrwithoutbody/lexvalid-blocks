@@ -14,6 +14,8 @@
  */
 import analizaDokumentu from "./analiza-dokumentu.json" with { type: "json" };
 
+// ponytail: jak rejestr klocków — ręczny, deploy przy nowym modelu.
+// Upgrade razem z tabelą blocks.
 export default {
   "analiza-dokumentu": analizaDokumentu,
 };

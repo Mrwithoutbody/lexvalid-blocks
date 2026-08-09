@@ -28,6 +28,9 @@
  *
  * Nowy klocek: katalog w `blocks/<nazwa>/` i jedna linia tutaj.
  */
+// ponytail: rejestr wypisany ręcznie — nowy klocek wymaga deployu hosta.
+// Upgrade: tabela blocks(tenant_id, …) + loader z prefetch, gdy instalacja
+// ma iść bez deployu.
 export { default as document } from "./document/index.mjs";
 export { default as screening } from "./screening/index.mjs";
 export { default as pseudonymization } from "./pseudonymization/index.mjs";
