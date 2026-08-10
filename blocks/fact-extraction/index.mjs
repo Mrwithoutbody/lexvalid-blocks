@@ -126,7 +126,7 @@ export default {
   reads: (step) => fields(step).filter((f) => f.wymagane).map((f) => `answers.${f.id}`),
 
   /**
-   * Pola wymagane stoją w formularzu, ale z `naZadanie` — czyli nikt o nie nie
+   * Pola wymagane stoją w formularzu, ale z `onDemand` — czyli nikt o nie nie
    * pyta z góry. Najpierw próbuje ich odczytać model; dopiero gdy w dokumencie
    * ich nie ma, blok prosi o nie wprost (`error.asks`).
    *
@@ -141,7 +141,7 @@ export default {
         id: field.id,
         label: field.opis ? `${field.id.replace(/_/g, " ")} — ${field.opis}` : field.id.replace(/_/g, " "),
         type: field.typ,
-        naZadanie: true,
+        onDemand: true,
       })),
 
   // Wydaje dokładnie te pola, o które kazano zapytać — dzięki temu checklista
