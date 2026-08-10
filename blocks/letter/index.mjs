@@ -77,7 +77,7 @@ export function fillTemplate(szablon, ctx) {
 export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
-  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
   wersja: 1,
   name: "Pismo z szablonu",
   description: "Składa pismo z szablonu i ustalonych faktów. Szablon jest danymi rodzaju sprawy, nie kodem.",

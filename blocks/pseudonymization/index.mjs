@@ -125,7 +125,7 @@ export function leftovers(text, names) {
 export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
-  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
   wersja: 1,
   name: "Pseudonimizacja",
   description: "Zamienia identyfikatory i adresy na etykiety i sprawdza, co po nich zostało.",

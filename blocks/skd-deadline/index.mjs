@@ -112,7 +112,7 @@ function opisz(status, splata, wyplata, zrodlo) {
 export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
-  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
   wersja: 1,
   name: "Termin z art. 45 ust. 5",
   description: "Liczy, czy uprawnienie do sankcji jeszcze biegnie — w obu spornych wykładniach.",
