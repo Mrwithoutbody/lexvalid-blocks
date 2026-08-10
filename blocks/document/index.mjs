@@ -86,7 +86,7 @@ export default {
     // znaczy że warstwy nie było.
     if (ctx.source.document_ocr) {
       const raw = new TextDecoder().decode(ctx.source.document_ocr);
-      const contentChars = raw.replace(/=== Strona \d+ ===/g, "").replace(/\s/g, "").length;
+      const contentChars = raw.replace(STRONA, "").replace(/\s/g, "").length;
 
       if (!contentChars) throw new Error("OCR skanu nie zwrócił ani jednego znaku");
 

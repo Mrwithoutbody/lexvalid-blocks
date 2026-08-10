@@ -28,9 +28,9 @@
  *
  * Nowy klocek: katalog w `blocks/<nazwa>/` i jedna linia tutaj.
  */
-// Rejestr WBUDOWANYCH — te jadą z deployem świadomie, bo to rdzeń. Klocek
-// kancelarii wchodzi bez deployu: manifest w `tenant_blocks`, kod w R2,
-// wykonanie w izolacie (host: src/dynamic-blocks.mjs).
+// Rejestr WBUDOWANYCH — te jadą z deployem świadomie, bo to rdzeń. Klocki
+// wgrywane przez kancelarię wycofane (host: e360a6f) — wracają razem
+// z izolatem (Worker Loader), nie wcześniej.
 export { default as document } from "./document/index.mjs";
 export { default as screening } from "./screening/index.mjs";
 export { default as pseudonymization } from "./pseudonymization/index.mjs";
