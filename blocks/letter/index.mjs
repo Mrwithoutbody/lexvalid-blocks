@@ -31,8 +31,8 @@ const MISSING = "[DO UZUPEŁNIENIA]";
  * i — przez to pismo — do adresata. W piśmie notatka czytałaby się jak
  * przyznanie, że zarzut jest niepewny.
  */
-const bezNotatek = (tekst) =>
-  String(tekst ?? "")
+const bezNotatek = (text) =>
+  String(text ?? "")
     .replace(/\s*\[[^\]]*\]/g, "")
     .trim();
 
@@ -78,7 +78,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Pismo z szablonu",
   description: "Składa pismo z szablonu i ustalonych faktów. Szablon jest danymi rodzaju sprawy, nie kodem.",
 
@@ -95,12 +95,12 @@ export default {
   report: true,
 
   /** Wkład do interfejsu: zwijana treść pisma. */
-  widoki: (ctx) =>
-    ctx.statement ? [{ widzet: "tekst", tytul: "Szkic pisma", tekst: ctx.statement }] : [],
+  views: (ctx) =>
+    ctx.statement ? [{ widget: "text", title: "Szkic pisma", text: ctx.statement }] : [],
 
   settings: [
-    { id: "odmowa_gdy", label: "Nie składaj pisma, gdy", type: "warunek", operatory: OPERATORS },
-    { id: "odmowa_powod", label: "Powód odmowy", type: "tekst" },
+    { id: "odmowa_gdy", label: "Nie składaj pisma, gdy", type: "condition", operatory: OPERATORS },
+    { id: "odmowa_powod", label: "Powód odmowy", type: "text" },
     // `szablon` celowo poza listą: edytor pokaże go w JSON-ie kroku, a pole
     // jednowierszowe i tak nie uniosłoby całego pisma.
   ],

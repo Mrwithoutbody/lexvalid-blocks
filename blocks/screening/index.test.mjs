@@ -25,14 +25,14 @@ const PYTANIA = {
     },
     {
       id: "kwota",
-      typ: "kwota",
+      typ: "amount",
       pytanie: "Kwota",
       blokuj_gdy: [">", 100000],
       powod: "za dużo",
     },
     {
       id: "konsument",
-      typ: "tak-nie",
+      typ: "yes-no",
       pytanie: "Kredyt na cel niezawodowy?",
       blokuj_gdy: ["=", false],
       powod: "kredyt firmowy",

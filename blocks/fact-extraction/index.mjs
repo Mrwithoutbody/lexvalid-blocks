@@ -36,13 +36,13 @@ export const fields = (step) =>
     // `wymagane` mówi, że bez tej wartości dalsze kroki nie mają czego liczyć,
     // więc brak w dokumencie ma być PYTANIEM do człowieka, nie awarią. Które
     // pola są takie, zależy od rodzaju sprawy, nie od mechanizmu — stąd dane.
-    return { id, opis: field.opis ?? null, wymagane: field.wymagane === true, typ: field.typ ?? "kwota" };
+    return { id, opis: field.opis ?? null, wymagane: field.wymagane === true, typ: field.typ ?? "amount" };
   });
 
 export const fieldNames = (step) => fields(step).map((field) => field.id);
 
 /** Porównanie cytatu z tekstem: białe znaki do jednej spacji, reszta znak w znak. */
-const compact = (tekst) => String(tekst).replace(/\s+/g, " ").trim();
+const compact = (text) => String(text).replace(/\s+/g, " ").trim();
 
 /**
  * Schemat strict wymusza kształt odpowiedzi: każde pole obecne, każde jako
@@ -112,7 +112,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Ekstrakcja faktów",
   // Koszt wywołania i wybór modelu to sprawa dewelopera — nie stoi na karcie.
   description: "Wyciąga z umowy wskazane dane. Przepisuje to, co w niej stoi — nic nie liczy.",
@@ -128,7 +128,7 @@ export default {
   /**
    * Pola wymagane stoją w formularzu, ale z `naZadanie` — czyli nikt o nie nie
    * pyta z góry. Najpierw próbuje ich odczytać model; dopiero gdy w dokumencie
-   * ich nie ma, blok prosi o nie wprost (`error.pyta`).
+   * ich nie ma, blok prosi o nie wprost (`error.asks`).
    *
    * Deklaracja musi tu być mimo to: silnik wpuszcza do `answers.` wyłącznie
    * odpowiedzi na pola, które jakiś blok zapowiedział w `form` — bez tego
@@ -185,20 +185,20 @@ export default {
    * Wkład do interfejsu: zaznaczenie cytatu-dowodu przy każdym odczytanym
    * fakcie. Ranga 1 — dowód ustępuje zarzutowi, gdy cytaty się nakładają.
    */
-  widoki: (ctx, step) =>
+  views: (ctx, step) =>
     fieldNames(step).some((pole) => ctx.evidence?.[pole])
       ? [
           {
-            widzet: "zaznaczenia",
-            zaznaczenia: fieldNames(step)
+            widget: "marks",
+            marks: fieldNames(step)
               .filter((pole) => ctx.evidence?.[pole]?.cytat)
               .map((pole) => ({
-                cytat: ctx.evidence[pole].cytat,
-                rodzaj: "info",
-                ranga: 1,
+                quote: ctx.evidence[pole].cytat,
+                kind: "info",
+                rank: 1,
                 id: `mark-${pole}`,
-                etykieta: `${pole.replace(/_/g, " ")}: ${ctx.facts?.[pole] ?? "—"}`,
-                legenda: "odczytany fakt",
+                label: `${pole.replace(/_/g, " ")}: ${ctx.facts?.[pole] ?? "—"}`,
+                legend: "odczytany fakt",
               })),
           },
         ]
@@ -208,13 +208,13 @@ export default {
     {
       id: "pola",
       label: "Pola do wyciągnięcia z dokumentu",
-      type: "wiersze",
-      pola: [
-        { id: "id", label: "Nazwa pola", type: "tekst" },
-        { id: "opis", label: "Czego szukać w umowie", type: "tekst" },
+      type: "rows",
+      fields: [
+        { id: "id", label: "Nazwa pola", type: "text" },
+        { id: "opis", label: "Czego szukać w umowie", type: "text" },
       ],
     },
-    { id: "model", label: "Model", type: "tekst" },
+    { id: "model", label: "Model", type: "text" },
   ],
 
   async run(ctx, step) {
@@ -319,7 +319,7 @@ export default {
         `dokument nie zawiera: ${doPytania.map((f) => f.id.replace(/_/g, " ")).join(", ")} — wpisz ręcznie`,
       );
       // Silnik zamieni to na pytanie do człowieka, nie na awarię.
-      brak.pyta = doPytania.map((field) => ({
+      brak.asks = doPytania.map((field) => ({
         id: field.id,
         label: field.opis ? `${field.id.replace(/_/g, " ")} — ${field.opis}` : field.id.replace(/_/g, " "),
         type: field.typ,

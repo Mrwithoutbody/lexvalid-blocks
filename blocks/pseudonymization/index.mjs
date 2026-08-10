@@ -41,7 +41,7 @@ const KOD_MIASTO = new RegExp(
   "g",
 );
 
-const escapeRe = (tekst) => tekst.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const escapeRe = (text) => text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 /**
  * @param names nazwiska stron podane przez kancelarię, np. ["Jan Kowalski"].
@@ -55,7 +55,7 @@ export function pseudonymize(text, names = []) {
   const liczniki = {};
   const znane = new Map();
 
-  const etykieta = (typ, label, oryginal) => {
+  const label = (typ, label, oryginal) => {
     const klucz = `${label}:${oryginal.toLowerCase()}`;
 
     if (!znane.has(klucz)) {
@@ -70,12 +70,12 @@ export function pseudonymize(text, names = []) {
 
   for (const pattern of PATTERNS) {
     text = text.replace(pattern.re, (raw) =>
-      pattern.ok && !pattern.ok(raw) ? raw : etykieta(pattern.type, pattern.label, raw),
+      pattern.ok && !pattern.ok(raw) ? raw : label(pattern.type, pattern.label, raw),
     );
   }
 
-  text = text.replace(ULICA, (raw) => etykieta("adres", "ADRES", raw));
-  text = text.replace(KOD_MIASTO, (raw) => etykieta("adres", "ADRES", raw));
+  text = text.replace(ULICA, (raw) => label("adres", "ADRES", raw));
+  text = text.replace(KOD_MIASTO, (raw) => label("adres", "ADRES", raw));
 
   for (const osoba of new Set(names)) {
     // Człony krótsze niż trzy znaki odpadają: inicjał „J." zamaskowałby pół umowy.
@@ -109,24 +109,24 @@ export function pseudonymize(text, names = []) {
  * znaczy że coś się rozjechało — i jest cięższym trafieniem niż wzorzec.
  */
 export function leftovers(text, names) {
-  const trafienia = scan(text);
+  const hits = scan(text);
 
   for (const osoba of names) {
     for (const czlon of osoba.split(/\s+/).filter((c) => c.length >= 3)) {
       if (new RegExp(`\\b${escapeRe(czlon)}`, "iu").test(text)) {
-        trafienia.push({ typ: "nazwisko", fragment: `${czlon[0]}***` });
+        hits.push({ typ: "nazwisko", fragment: `${czlon[0]}***` });
       }
     }
   }
 
-  return trafienia;
+  return hits;
 }
 
 export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Pseudonimizacja",
   description: "Zamienia identyfikatory i adresy na etykiety i sprawdza, co po nich zostało.",
 
@@ -154,7 +154,7 @@ export default {
   // i nie ma jej skąd znać.
   client: "strony",
 
-  settings: [{ id: "blokuj", label: "Zatrzymaj sprawę, gdy coś zostało", type: "wybor", opcje: ["tak", "nie"] }],
+  settings: [{ id: "blokuj", label: "Zatrzymaj sprawę, gdy coś zostało", type: "choice", options: ["tak", "nie"] }],
 
   /**
    * Wkład do interfejsu — oba przy materiale, nie w wyniku: ostrzeżenie
@@ -162,33 +162,33 @@ export default {
    * z którego coś zdjęto. Ranga 2 — etykieta wewnątrz cytatu ustępuje
    * zarzutowi i faktowi, bo niesie tam mniej niż one.
    */
-  widoki: (ctx) => {
+  views: (ctx) => {
     const out = [];
-    const trafienia = ctx.pseudonymization?.trafienia ?? [];
+    const hits = ctx.pseudonymization?.trafienia ?? [];
 
-    if (trafienia.length) {
+    if (hits.length) {
       out.push({
-        widzet: "akapit",
+        widget: "paragraph",
         slot: "material",
-        ton: "uwaga",
-        tekst: trafienia.map((t) => `${t.typ}: ${t.fragment}`).join("\n"),
+        tone: "warning",
+        text: hits.map((t) => `${t.typ}: ${t.fragment}`).join("\n"),
       });
     }
 
     // Etykiety są numerowane w obrębie dokumentu, więc wzorzec, nie lista
     // typów — blok może dołożyć nowy typ bez zmiany widoku.
-    const etykiety = ctx.text?.safe?.match(/\[[A-ZĄĆĘŁŃÓŚŻŹ]+(?:-[A-ZĄĆĘŁŃÓŚŻŹ]+)*-\d+\]/g) ?? [];
+    const labels = ctx.text?.safe?.match(/\[[A-ZĄĆĘŁŃÓŚŻŹ]+(?:-[A-ZĄĆĘŁŃÓŚŻŹ]+)*-\d+\]/g) ?? [];
 
-    if (etykiety.length) {
+    if (labels.length) {
       out.push({
-        widzet: "zaznaczenia",
-        zaznaczenia: etykiety.map((etykieta, i) => ({
-          cytat: etykieta,
-          rodzaj: "maska",
-          ranga: 2,
+        widget: "marks",
+        marks: labels.map((label, i) => ({
+          quote: label,
+          kind: "mask",
+          rank: 2,
           id: `mark-pii-${i}`,
-          etykieta: `zdjęte przed wysłaniem do modelu: ${etykieta}`,
-          legenda: "dane zdjęte przed modelem",
+          label: `zdjęte przed wysłaniem do modelu: ${label}`,
+          legend: "dane zdjęte przed modelem",
         })),
       });
     }
@@ -204,14 +204,14 @@ export default {
     {
       id: "strony",
       label: "Imiona i nazwiska stron umowy — po jednym w wierszu",
-      type: "tekst",
+      type: "text",
     },
   ],
 
   async run(ctx, step) {
     const strony = splitNames(ctx.answers.strony);
     const { text, podstawienia, statystyka } = pseudonymize(ctx.text.raw, strony);
-    const trafienia = leftovers(text, strony);
+    const hits = leftovers(text, strony);
 
     const values = {
       "text.safe": text,
@@ -219,7 +219,7 @@ export default {
       ...under("pseudonymization", {
         statystyka,
         podstawien: podstawienia.length,
-        trafienia,
+        trafienia: hits,
         // Ta uwaga jedzie do raportu celowo: bez niej „czysty" czyta się jak wyrok.
         uwaga: "Nazwisko, którego nikt nie wpisał, i nietypowy adres przejdą — czysty wynik to nie gwarancja.",
       }),
@@ -227,8 +227,8 @@ export default {
 
     // `blokuj: "nie"` przepuszcza dalej ze śladem — do przebiegu na umowach
     // testowych, gdzie brak PII potwierdził człowiek. Domyślnie zatrzymujemy.
-    if (trafienia.length && step.blokuj !== "nie") {
-      const typy = [...new Set(trafienia.map((t) => t.typ))].join(", ");
+    if (hits.length && step.blokuj !== "nie") {
+      const typy = [...new Set(hits.map((t) => t.typ))].join(", ");
       const pii = new Error(`w tekście zostały dane osobowe (${typy}) — nie wysyłam do modelu`);
       // Trafienia jadą do raportu, bo to one mówią, co zostało do sprawdzenia
       // ręcznie. `text.safe` też — pipeline i tak stanął, a następny krok
@@ -244,7 +244,7 @@ export default {
     return {
       note: [
         podstawienia.length ? `${podstawienia.length} podstawień — ${opis}` : "nic do podmiany",
-        trafienia.length ? `${trafienia.length} trafień po podmianie` : "wzorce czyste",
+        hits.length ? `${hits.length} trafień po podmianie` : "wzorce czyste",
       ].join("; "),
       values,
     };

@@ -23,7 +23,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Checklista formalna",
   description: "Przechodzi listę obowiązkowych elementów umowy i zaznacza naruszenia.",
 
@@ -57,13 +57,13 @@ export default {
     {
       id: "pozycje",
       label: "Pozycje checklisty",
-      type: "wiersze",
-      pola: [
-        { id: "kod", label: "Kod", type: "tekst" },
-        { id: "waga", label: "Waga", type: "wybor", opcje: ["krytyczny", "istotny"] },
-        { id: "podstawa", label: "Podstawa prawna", type: "tekst" },
-        { id: "opis", label: "Opis naruszenia", type: "tekst" },
-        { id: "gdy", label: "Naruszona gdy", type: "warunek", operatory: CHECKLIST_OPS },
+      type: "rows",
+      fields: [
+        { id: "kod", label: "Kod", type: "text" },
+        { id: "waga", label: "Waga", type: "choice", options: ["krytyczny", "istotny"] },
+        { id: "podstawa", label: "Podstawa prawna", type: "text" },
+        { id: "opis", label: "Opis naruszenia", type: "text" },
+        { id: "gdy", label: "Naruszona gdy", type: "condition", operators: CHECKLIST_OPS },
       ],
     },
   ],
@@ -73,51 +73,51 @@ export default {
    * orzecznictwem i cytatem) oraz zaznaczenia cytatów w materiale. Ranga 0 —
    * zarzut wygrywa nakładkę z faktem, bo po niego sięga się najczęściej.
    */
-  widoki: (ctx) => {
+  views: (ctx) => {
     const { findings, checked } = ctx.checklist ?? {};
     if (findings == null) return [];
 
     if (!findings.length) {
       return [
         {
-          widzet: "akapit",
-          tekst: `Żadna z ${checked ?? 0} pozycji checklisty nie została naruszona.`,
+          widget: "paragraph",
+          text: `Żadna z ${checked ?? 0} pozycji checklisty nie została naruszona.`,
         },
       ];
     }
 
-    const ton = (waga) => (waga === "krytyczny" ? "blad" : "uwaga");
+    const tone = (waga) => (waga === "krytyczny" ? "error" : "warning");
 
     return [
       {
-        widzet: "karty",
-        tytul: `Naruszenia (${findings.length}${checked ? ` z ${checked} sprawdzanych pozycji` : ""})`,
-        karty: findings.map((f) => ({
+        widget: "cards",
+        title: `Naruszenia (${findings.length}${checked ? ` z ${checked} sprawdzanych pozycji` : ""})`,
+        cards: findings.map((f) => ({
           chip: `${f.kod} · ${f.waga ?? ""}`,
-          ton: ton(f.waga),
-          tekst: f.opis ?? "",
-          szczegoly: [
-            { etykieta: "Podstawa", tekst: f.podstawa ?? "—" },
+          tone: tone(f.waga),
+          text: f.opis ?? "",
+          details: [
+            { label: "Podstawa", text: f.podstawa ?? "—" },
             ...(f.orzeczenia ?? []).map((o) => ({
-              etykieta: o.sygnatura ?? "",
-              tekst: o.teza ?? "",
+              label: o.sygnatura ?? "",
+              text: o.teza ?? "",
             })),
           ],
-          cytat: f.dowod?.cytat ?? null,
-          zaznaczenie: f.dowod?.cytat ? `mark-${f.kod}` : null,
+          quote: f.dowod?.cytat ?? null,
+          mark: f.dowod?.cytat ? `mark-${f.kod}` : null,
         })),
       },
       {
-        widzet: "zaznaczenia",
-        zaznaczenia: findings
+        widget: "marks",
+        marks: findings
           .filter((f) => f.dowod?.cytat)
           .map((f) => ({
-            cytat: f.dowod.cytat,
-            rodzaj: ton(f.waga),
-            ranga: 0,
+            quote: f.dowod.cytat,
+            kind: tone(f.waga),
+            rank: 0,
             id: `mark-${f.kod}`,
-            etykieta: `${f.kod} · ${f.opis}`,
-            legenda: `zarzut ${f.waga}`,
+            label: `${f.kod} · ${f.opis}`,
+            legend: `zarzut ${f.waga}`,
           })),
       },
     ];

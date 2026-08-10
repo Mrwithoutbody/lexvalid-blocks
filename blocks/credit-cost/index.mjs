@@ -127,7 +127,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Przeliczenia",
   description: "RRSO, limit kosztów pozaodsetkowych i wartość roszczenia — kodem, nie modelem.",
 
@@ -158,14 +158,14 @@ export default {
   report: true,
 
   /** Wkład do interfejsu: zwijana tabela „skąd ta kwota". */
-  widoki: (ctx) => {
+  views: (ctx) => {
     if (!ctx.calculations) return [];
 
     return [
       {
-        widzet: "tabela",
-        tytul: "Wyliczenia — skąd ta kwota",
-        wiersze: RESULTS.map((key) => [key.replace(/_/g, " "), ctx.calculations[key] ?? null]),
+        widget: "table",
+        title: "Wyliczenia — skąd ta kwota",
+        rows: RESULTS.map((key) => [key.replace(/_/g, " "), ctx.calculations[key] ?? null]),
       },
     ];
   },
@@ -176,11 +176,11 @@ export default {
     {
       id: "limit_pozaodsetkowy",
       label: "Limit kosztów pozaodsetkowych",
-      type: "grupa",
-      pola: [
-        { id: "staly_procent", label: "Część stała (%)", type: "liczba" },
-        { id: "roczny_procent", label: "Część roczna (%)", type: "liczba" },
-        { id: "maks_procent", label: "Sufit (% kwoty kredytu)", type: "liczba" },
+      type: "group",
+      fields: [
+        { id: "staly_procent", label: "Część stała (%)", type: "number" },
+        { id: "roczny_procent", label: "Część roczna (%)", type: "number" },
+        { id: "maks_procent", label: "Sufit (% kwoty kredytu)", type: "number" },
       ],
     },
   ],

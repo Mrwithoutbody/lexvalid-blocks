@@ -27,8 +27,8 @@ import { plural } from "../../../src/contract/plural.mjs";
  * kwota do zaplaty" i dokument odpadałby na własnej treści. „ł" nie rozkłada się
  * w NFD — ma własny punkt kodowy — więc idzie osobno.
  */
-const bezOgonkow = (tekst) =>
-  tekst
+const bezOgonkow = (text) =>
+  text
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .replace(/ł/g, "l")
@@ -46,7 +46,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Kwalifikacja",
   description:
     "Sprawdza, czy dokument pasuje do tego rodzaju sprawy i czy odpowiedzi ją kwalifikują. Umowa jest już na ekranie — odpowiedzi przepisz z niej.",
@@ -72,18 +72,18 @@ export default {
   form: (step) => questions(step).map((q) => ({ id: q.id, label: q.pytanie, type: q.typ })),
 
   settings: [
-    { id: "slowa_kluczowe", label: "Słowa kluczowe dokumentu", type: "lista" },
-    { id: "prog", label: "Próg dopasowania (ułamek trafionych słów)", type: "liczba" },
+    { id: "slowa_kluczowe", label: "Słowa kluczowe dokumentu", type: "list" },
+    { id: "prog", label: "Próg dopasowania (ułamek trafionych słów)", type: "number" },
     {
       id: "pytania",
       label: "Pytania",
-      type: "wiersze",
-      pola: [
-        { id: "id", label: "Klucz odpowiedzi", type: "tekst" },
-        { id: "pytanie", label: "Pytanie", type: "tekst" },
-        { id: "typ", label: "Typ pola", type: "wybor", opcje: ["tak-nie", "data", "kwota", "tekst"] },
-        { id: "blokuj_gdy", label: "Odrzuć gdy", type: "blokada", operatory: BLOKADA_OPS },
-        { id: "powod", label: "Powód odrzucenia", type: "tekst" },
+      type: "rows",
+      fields: [
+        { id: "id", label: "Klucz odpowiedzi", type: "text" },
+        { id: "pytanie", label: "Pytanie", type: "text" },
+        { id: "typ", label: "Typ pola", type: "choice", options: ["yes-no", "date", "amount", "text"] },
+        { id: "blokuj_gdy", label: "Odrzuć gdy", type: "lock", operators: BLOKADA_OPS },
+        { id: "powod", label: "Powód odrzucenia", type: "text" },
       ],
     },
   ],
@@ -100,8 +100,8 @@ export default {
     const values = {};
 
     if (slowa.length) {
-      const tekst = bezOgonkow(ctx.text.raw);
-      const trafione = slowa.filter((slowo) => tekst.includes(bezOgonkow(slowo)));
+      const text = bezOgonkow(ctx.text.raw);
+      const trafione = slowa.filter((slowo) => text.includes(bezOgonkow(slowo)));
       const dopasowanie = trafione.length / slowa.length;
       const prog = step.prog ?? 0.5;
 

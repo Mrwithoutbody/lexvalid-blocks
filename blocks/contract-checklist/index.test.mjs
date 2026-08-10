@@ -175,7 +175,7 @@ test("wymagania wychodzą z warunków, więc pipeline wie, co postawić wcześni
 
   // Krotność też sięga w kontekst — bez tego czynsz byłby cichym `undefined`,
   // a kaucja ponad limit przechodziłaby bez zarzutu.
-  const deposit = { gdy: ["facts.kaucja", ">", { sciezka: "facts.czynsz_miesieczny", razy: 12 }] };
+  const deposit = { gdy: ["facts.kaucja", ">", { path: "facts.czynsz_miesieczny", times: 12 }] };
   assert.deepEqual(block.requires({ pozycje: [deposit] }), ["facts.kaucja", "facts.czynsz_miesieczny"]);
 
   assert.deepEqual(block.requires({}), [], "pusta checklista niczego nie wymaga");
@@ -195,7 +195,7 @@ test("kontrakt bloku zgadza się z tym, co blok naprawdę robi", async () => {
 // ── widoki: karta zarzutu i zaznaczenie cytatu ───────────────────────────
 
 test("widoki oddają kartę zarzutu i zaznaczenie jego cytatu", () => {
-  const widoki = block.widoki({
+  const views = block.views({
     checklist: {
       checked: 3,
       findings: [
@@ -210,22 +210,22 @@ test("widoki oddają kartę zarzutu i zaznaczenie jego cytatu", () => {
     },
   });
 
-  const [karty, zaznaczenia] = widoki;
+  const [cards, marks] = views;
 
-  assert.equal(karty.widzet, "karty");
-  assert.match(karty.tytul, /1 z 3/);
-  assert.equal(karty.karty[0].ton, "blad");
-  assert.equal(karty.karty[0].zaznaczenie, "mark-R-001");
-  assert.equal(karty.karty[0].szczegoly[0].tekst, "art. 30");
+  assert.equal(cards.widget, "cards");
+  assert.match(cards.title, /1 z 3/);
+  assert.equal(cards.cards[0].tone, "error");
+  assert.equal(cards.cards[0].mark, "mark-R-001");
+  assert.equal(cards.cards[0].details[0].text, "art. 30");
 
-  assert.equal(zaznaczenia.widzet, "zaznaczenia");
-  assert.equal(zaznaczenia.zaznaczenia[0].cytat, "RRSO wynosi");
-  assert.equal(zaznaczenia.zaznaczenia[0].ranga, 0);
+  assert.equal(marks.widget, "marks");
+  assert.equal(marks.marks[0].quote, "RRSO wynosi");
+  assert.equal(marks.marks[0].rank, 0);
 });
 
 test("czysta checklista mówi to zdaniem, nie pustką", () => {
-  const [akapit] = block.widoki({ checklist: { checked: 5, findings: [] } });
+  const [akapit] = block.views({ checklist: { checked: 5, findings: [] } });
 
-  assert.equal(akapit.widzet, "akapit");
-  assert.match(akapit.tekst, /Żadna z 5/);
+  assert.equal(akapit.widget, "paragraph");
+  assert.match(akapit.text, /Żadna z 5/);
 });

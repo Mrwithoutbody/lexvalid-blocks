@@ -74,17 +74,17 @@ test("wynik niesie zastrzeżenie o spornej wykładni", async () => {
 // ── widoki: słowa dziedziny jadą z klocka, nie z hosta ───────────────────
 
 test("widoki oddają chip statusu i akapit z opisem", () => {
-  const widoki = block.widoki({
+  const views = block.views({
     deadline: { status: "sporny", opis: "Wykładnie się rozchodzą.", podstawa: "art. 45 ust. 5 UKK" },
   });
 
-  assert.equal(widoki[0].widzet, "chip");
-  assert.equal(widoki[0].ton, "uwaga");
-  assert.match(widoki[0].etykieta, /sporny/i);
-  assert.equal(widoki[1].widzet, "akapit");
-  assert.equal(widoki[1].dopisek.includes("art. 45"), true);
+  assert.equal(views[0].widget, "chip");
+  assert.equal(views[0].tone, "warning");
+  assert.match(views[0].label, /sporny/i);
+  assert.equal(views[1].widget, "paragraph");
+  assert.equal(views[1].note.includes("art. 45"), true);
 });
 
 test("bez statusu nie ma widoków — krok jeszcze się nie policzył", () => {
-  assert.deepEqual(block.widoki({}), []);
+  assert.deepEqual(block.views({}), []);
 });

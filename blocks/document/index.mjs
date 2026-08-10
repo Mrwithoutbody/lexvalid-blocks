@@ -45,7 +45,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Dokument sprawy",
   description:
     "Człowiek wgrywa PDF, blok wyjmuje jego warstwę tekstową. Zdjęcie albo skan bez tekstu wymaga OCR-u, którego tu nie ma.",
@@ -64,21 +64,21 @@ export default {
   // Bez `report`: treść umowy to materiał analizy, nie jej wynik.
 
   form: () => [
-    { id: "document", label: "Dokument PDF", type: "plik" },
+    { id: "document", label: "Dokument PDF", type: "file" },
     // `wypelnia` mówi interfejsowi, że o te pola nie pyta się człowieka —
     // składa je przeglądarka. Deklaracja stoi tutaj, bo to blok wie, co
     // konsumuje; player nie zna nazwy żadnego pola z osobna.
     {
       id: "document_ocr",
       label: "Tekst rozpoznany ze skanu",
-      type: "plik",
-      wypelnia: "przegladarka",
+      type: "file",
+      filledBy: "browser",
     },
     {
       id: "document_text",
       label: "Warstwa tekstowa odczytana w przeglądarce",
-      type: "plik",
-      wypelnia: "przegladarka",
+      type: "file",
+      filledBy: "browser",
     },
   ],
 

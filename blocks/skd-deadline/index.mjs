@@ -113,7 +113,7 @@ export default {
   model: "analiza-dokumentu",
   // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
   // wersją same zgłoszą się do przeliczenia (`src/engine/versions.mjs`).
-  wersja: 1,
+  version: 1,
   name: "Termin z art. 45 ust. 5",
   description: "Liczy, czy uprawnienie do sankcji jeszcze biegnie — w obu spornych wykładniach.",
 
@@ -143,21 +143,21 @@ export default {
    * zdaniem. Słowa dziedziny („termin sporny — zależy od wykładni") stoją
    * tutaj, w klocku, który je policzył — host zna tylko widżety i tony.
    */
-  widoki: (ctx) => {
+  views: (ctx) => {
     const { status, opis, podstawa } = ctx.deadline ?? {};
     if (!status) return [];
 
-    const ETYKIETA = {
+    const STATUS_LABEL = {
       otwarty: "Termin otwarty",
       sporny: "Termin sporny — zależy od wykładni",
       wygasly: "Termin upłynął — roszczenie nie przysługuje",
       nieznany: "Terminu nie ustalono",
     };
-    const TON = { otwarty: "ok", sporny: "uwaga", wygasly: "blad", nieznany: "brak" };
+    const STATUS_TONE = { otwarty: "ok", sporny: "warning", wygasly: "error", nieznany: "none" };
 
     return [
-      { widzet: "chip", etykieta: ETYKIETA[status] ?? status, ton: TON[status] ?? "brak" },
-      { widzet: "akapit", tekst: opis, dopisek: podstawa },
+      { widget: "chip", label: STATUS_LABEL[status] ?? status, tone: STATUS_TONE[status] ?? "none" },
+      { widget: "paragraph", text: opis, note: podstawa },
     ];
   },
 

@@ -79,9 +79,9 @@ test("o dokument blok pyta człowieka, o tekst ze skanu nie", () => {
   const [dokument, ocr] = block.form();
 
   assert.equal(dokument.id, "document");
-  assert.equal(dokument.wypelnia, undefined);
+  assert.equal(dokument.filledBy, undefined);
   assert.equal(ocr.id, "document_ocr");
-  assert.equal(ocr.wypelnia, "przegladarka");
+  assert.equal(ocr.filledBy, "browser");
 
   assert.deepEqual(block.requires, ["source.document"]);
   assert.deepEqual(block.provides, ["text.raw"]);
