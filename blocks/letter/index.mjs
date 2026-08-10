@@ -91,6 +91,10 @@ export default {
   provides: ["statement"],
   report: true,
 
+  /** Wkład do interfejsu: zwijana treść pisma. */
+  widoki: (ctx) =>
+    ctx.statement ? [{ widzet: "tekst", tytul: "Szkic pisma", tekst: ctx.statement }] : [],
+
   settings: [
     { id: "odmowa_gdy", label: "Nie składaj pisma, gdy", type: "warunek", operatory: OPERATORS },
     { id: "odmowa_powod", label: "Powód odmowy", type: "tekst" },

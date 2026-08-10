@@ -154,6 +154,46 @@ export default {
   settings: [{ id: "blokuj", label: "Zatrzymaj sprawę, gdy coś zostało", type: "wybor", opcje: ["tak", "nie"] }],
 
   /**
+   * Wkład do interfejsu — oba przy materiale, nie w wyniku: ostrzeżenie
+   * o tym, co zostało po podmianie, i zaznaczenie każdej etykiety w miejscu,
+   * z którego coś zdjęto. Ranga 2 — etykieta wewnątrz cytatu ustępuje
+   * zarzutowi i faktowi, bo niesie tam mniej niż one.
+   */
+  widoki: (ctx) => {
+    const out = [];
+    const trafienia = ctx.pseudonymization?.trafienia ?? [];
+
+    if (trafienia.length) {
+      out.push({
+        widzet: "akapit",
+        slot: "material",
+        ton: "uwaga",
+        tekst: trafienia.map((t) => `${t.typ}: ${t.fragment}`).join("\n"),
+      });
+    }
+
+    // Etykiety są numerowane w obrębie dokumentu, więc wzorzec, nie lista
+    // typów — blok może dołożyć nowy typ bez zmiany widoku.
+    const etykiety = ctx.text?.safe?.match(/\[[A-ZĄĆĘŁŃÓŚŻŹ]+(?:-[A-ZĄĆĘŁŃÓŚŻŹ]+)*-\d+\]/g) ?? [];
+
+    if (etykiety.length) {
+      out.push({
+        widzet: "zaznaczenia",
+        zaznaczenia: etykiety.map((etykieta, i) => ({
+          cytat: etykieta,
+          rodzaj: "maska",
+          ranga: 2,
+          id: `mark-pii-${i}`,
+          etykieta: `zdjęte przed wysłaniem do modelu: ${etykieta}`,
+          legenda: "dane zdjęte przed modelem",
+        })),
+      });
+    }
+
+    return out;
+  },
+
+  /**
    * Pytamy dopiero tutaj, a nie w kwalifikacji: człowiek ma przed sobą wgrany
    * dokument i przepisuje z niego strony, zamiast odtwarzać je z pamięci.
    */

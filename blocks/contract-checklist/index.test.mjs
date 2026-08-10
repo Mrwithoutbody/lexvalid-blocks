@@ -191,3 +191,41 @@ test("kontrakt bloku zgadza się z tym, co blok naprawdę robi", async () => {
     assert.ok(ctx[root]?.[key] !== undefined, `blok nie ustawił ${path}`);
   }
 });
+
+// ── widoki: karta zarzutu i zaznaczenie cytatu ───────────────────────────
+
+test("widoki oddają kartę zarzutu i zaznaczenie jego cytatu", () => {
+  const widoki = block.widoki({
+    checklist: {
+      checked: 3,
+      findings: [
+        {
+          kod: "R-001",
+          waga: "krytyczny",
+          opis: "Brak RRSO.",
+          podstawa: "art. 30",
+          dowod: { cytat: "RRSO wynosi" },
+        },
+      ],
+    },
+  });
+
+  const [karty, zaznaczenia] = widoki;
+
+  assert.equal(karty.widzet, "karty");
+  assert.match(karty.tytul, /1 z 3/);
+  assert.equal(karty.karty[0].ton, "blad");
+  assert.equal(karty.karty[0].zaznaczenie, "mark-R-001");
+  assert.equal(karty.karty[0].szczegoly[0].tekst, "art. 30");
+
+  assert.equal(zaznaczenia.widzet, "zaznaczenia");
+  assert.equal(zaznaczenia.zaznaczenia[0].cytat, "RRSO wynosi");
+  assert.equal(zaznaczenia.zaznaczenia[0].ranga, 0);
+});
+
+test("czysta checklista mówi to zdaniem, nie pustką", () => {
+  const [akapit] = block.widoki({ checklist: { checked: 5, findings: [] } });
+
+  assert.equal(akapit.widzet, "akapit");
+  assert.match(akapit.tekst, /Żadna z 5/);
+});

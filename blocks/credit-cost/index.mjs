@@ -154,6 +154,19 @@ export default {
   provides: RESULTS.map((key) => `calculations.${key}`),
   report: true,
 
+  /** Wkład do interfejsu: zwijana tabela „skąd ta kwota". */
+  widoki: (ctx) => {
+    if (!ctx.calculations) return [];
+
+    return [
+      {
+        widzet: "tabela",
+        tytul: "Wyliczenia — skąd ta kwota",
+        wiersze: RESULTS.map((key) => [key.replace(/_/g, " "), ctx.calculations[key] ?? null]),
+      },
+    ];
+  },
+
   // Stawki limitu z art. 36a: ustawodawca je zmieniał, a sprawa liczy się według
   // stanu na dzień zawarcia umowy — więc wchodzą tu, nie do kodu.
   settings: [

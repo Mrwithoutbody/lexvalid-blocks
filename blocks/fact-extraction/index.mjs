@@ -141,6 +141,29 @@ export default {
   memoKey: (ctx, step) =>
     JSON.stringify([step.model ?? null, fields(step), (ctx.text?.safe ?? "").length, ctx.text?.safe]),
 
+  /**
+   * Wkład do interfejsu: zaznaczenie cytatu-dowodu przy każdym odczytanym
+   * fakcie. Ranga 1 — dowód ustępuje zarzutowi, gdy cytaty się nakładają.
+   */
+  widoki: (ctx, step) =>
+    fieldNames(step).some((pole) => ctx.evidence?.[pole])
+      ? [
+          {
+            widzet: "zaznaczenia",
+            zaznaczenia: fieldNames(step)
+              .filter((pole) => ctx.evidence?.[pole]?.cytat)
+              .map((pole) => ({
+                cytat: ctx.evidence[pole].cytat,
+                rodzaj: "info",
+                ranga: 1,
+                id: `mark-${pole}`,
+                etykieta: `${pole.replace(/_/g, " ")}: ${ctx.facts?.[pole] ?? "—"}`,
+                legenda: "odczytany fakt",
+              })),
+          },
+        ]
+      : [],
+
   settings: [
     {
       id: "pola",

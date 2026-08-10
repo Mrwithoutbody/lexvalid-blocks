@@ -135,6 +135,29 @@ export default {
   ],
   report: true,
 
+  /**
+   * Wkład do interfejsu: chip statusu przy kwocie wyniku i akapit z pełnym
+   * zdaniem. Słowa dziedziny („termin sporny — zależy od wykładni") stoją
+   * tutaj, w klocku, który je policzył — host zna tylko widżety i tony.
+   */
+  widoki: (ctx) => {
+    const { status, opis, podstawa } = ctx.deadline ?? {};
+    if (!status) return [];
+
+    const ETYKIETA = {
+      otwarty: "Termin otwarty",
+      sporny: "Termin sporny — zależy od wykładni",
+      wygasly: "Termin upłynął — roszczenie nie przysługuje",
+      nieznany: "Terminu nie ustalono",
+    };
+    const TON = { otwarty: "ok", sporny: "uwaga", wygasly: "blad", nieznany: "brak" };
+
+    return [
+      { widzet: "chip", etykieta: ETYKIETA[status] ?? status, ton: TON[status] ?? "brak" },
+      { widzet: "akapit", tekst: opis, dopisek: podstawa },
+    ];
+  },
+
   async run(ctx, step) {
     // `na_dzien` w konfiguracji tylko po to, żeby test nie zależał od kalendarza.
     const dzisiaj = step.na_dzien ?? new Date().toISOString().slice(0, 10);

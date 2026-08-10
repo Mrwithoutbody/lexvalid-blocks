@@ -70,3 +70,21 @@ test("wynik niesie zastrzeżenie o spornej wykładni", async () => {
   // sprawdzałby wyłącznie, czy ktoś nie zmienił napisu.
   assert.match(ctx.deadline.podstawa, /DO WERYFIKACJI P/);
 });
+
+// ── widoki: słowa dziedziny jadą z klocka, nie z hosta ───────────────────
+
+test("widoki oddają chip statusu i akapit z opisem", () => {
+  const widoki = block.widoki({
+    deadline: { status: "sporny", opis: "Wykładnie się rozchodzą.", podstawa: "art. 45 ust. 5 UKK" },
+  });
+
+  assert.equal(widoki[0].widzet, "chip");
+  assert.equal(widoki[0].ton, "uwaga");
+  assert.match(widoki[0].etykieta, /sporny/i);
+  assert.equal(widoki[1].widzet, "akapit");
+  assert.equal(widoki[1].dopisek.includes("art. 45"), true);
+});
+
+test("bez statusu nie ma widoków — krok jeszcze się nie policzył", () => {
+  assert.deepEqual(block.widoki({}), []);
+});

@@ -65,6 +65,61 @@ export default {
     },
   ],
 
+  /**
+   * Wkład do interfejsu: karty zarzutów (klik → szczegóły z podstawą,
+   * orzecznictwem i cytatem) oraz zaznaczenia cytatów w materiale. Ranga 0 —
+   * zarzut wygrywa nakładkę z faktem, bo po niego sięga się najczęściej.
+   */
+  widoki: (ctx) => {
+    const { findings, checked } = ctx.checklist ?? {};
+    if (findings == null) return [];
+
+    if (!findings.length) {
+      return [
+        {
+          widzet: "akapit",
+          tekst: `Żadna z ${checked ?? 0} pozycji checklisty nie została naruszona.`,
+        },
+      ];
+    }
+
+    const ton = (waga) => (waga === "krytyczny" ? "blad" : "uwaga");
+
+    return [
+      {
+        widzet: "karty",
+        tytul: `Naruszenia (${findings.length}${checked ? ` z ${checked} sprawdzanych pozycji` : ""})`,
+        karty: findings.map((f) => ({
+          chip: `${f.kod} · ${f.waga ?? ""}`,
+          ton: ton(f.waga),
+          tekst: f.opis ?? "",
+          szczegoly: [
+            { etykieta: "Podstawa", tekst: f.podstawa ?? "—" },
+            ...(f.orzeczenia ?? []).map((o) => ({
+              etykieta: o.sygnatura ?? "",
+              tekst: o.teza ?? "",
+            })),
+          ],
+          cytat: f.dowod?.cytat ?? null,
+          zaznaczenie: f.dowod?.cytat ? `mark-${f.kod}` : null,
+        })),
+      },
+      {
+        widzet: "zaznaczenia",
+        zaznaczenia: findings
+          .filter((f) => f.dowod?.cytat)
+          .map((f) => ({
+            cytat: f.dowod.cytat,
+            rodzaj: ton(f.waga),
+            ranga: 0,
+            id: `mark-${f.kod}`,
+            etykieta: `${f.kod} · ${f.opis}`,
+            legenda: `zarzut ${f.waga}`,
+          })),
+      },
+    ];
+  },
+
   async run(ctx, step) {
     const items = step.pozycje ?? [];
 
