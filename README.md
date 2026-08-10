@@ -19,8 +19,19 @@ wycinek kontekstu (nic spoza deklaracji nie da się przeczytać), z `run` wychod
 mapa wartości (nic spoza `provides` nie da się zapisać).
 
 Jak wtyczka WordPressa wymaga WordPressa, tak klocek wymaga hosta: importy
-`../../../src/*` to kontrakt z nim (model danych: `src/case-context.mjs`
-hosta, wspólny język warunków: `src/conditions.mjs`). Testy klocków uruchamia host — `npm test`
+`../../../src/*` to kontrakt z nim — i jest to lista zamknięta:
+
+| plik hosta | po co |
+| --- | --- |
+| `src/case-context.mjs` | model danych: ścieżki, przestrzenie, `under()` |
+| `src/conditions.mjs` | wspólny język warunków |
+| `src/dates.mjs` | normalizacja dat |
+| `src/plural.mjs` | odmiana przez liczbę w tekstach dla człowieka |
+| `src/engine/index.mjs` | `runStep` — wyłącznie w testach klocka |
+
+Reszta `src/` to wnętrze hosta. Klocek dostaje wycinek kontekstu właśnie po to,
+żeby nie musiał sięgać do bazy ani do kubełka — `src/engine-isolation.test.mjs`
+po stronie hosta czyta importy i zapala się na każdym wyjściu poza tę listę. Testy klocków uruchamia host — `npm test`
 w jego korzeniu.
 
 ## Nowy klocek
