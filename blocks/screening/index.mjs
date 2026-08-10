@@ -44,6 +44,9 @@ const BLOKADA_OPS = ["<", ">", "="];
 
 export default {
   model: "analiza-dokumentu",
+  // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
+  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  wersja: 1,
   name: "Kwalifikacja",
   description:
     "Sprawdza, czy dokument pasuje do tego rodzaju sprawy i czy odpowiedzi ją kwalifikują. Umowa jest już na ekranie — odpowiedzi przepisz z niej.",

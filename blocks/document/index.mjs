@@ -43,6 +43,9 @@ async function czytajPdf(bytes) {
 
 export default {
   model: "analiza-dokumentu",
+  // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
+  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  wersja: 1,
   name: "Dokument sprawy",
   description:
     "Człowiek wgrywa PDF, blok wyjmuje jego warstwę tekstową. Zdjęcie albo skan bez tekstu wymaga OCR-u, którego tu nie ma.",

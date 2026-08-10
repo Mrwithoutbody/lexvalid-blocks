@@ -125,6 +125,9 @@ const RESULTS = [
 
 export default {
   model: "analiza-dokumentu",
+  // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
+  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  wersja: 1,
   name: "Przeliczenia",
   description: "RRSO, limit kosztów pozaodsetkowych i wartość roszczenia — kodem, nie modelem.",
 

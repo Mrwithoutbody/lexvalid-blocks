@@ -110,6 +110,9 @@ export function factsFrom(raw, wanted, text) {
 
 export default {
   model: "analiza-dokumentu",
+  // Podnieś, gdy zmienia się WYNIK tego klocka — sprawy policzone starszą
+  // wersją same zgłoszą się do przeliczenia (`src/engine/wersje.mjs`).
+  wersja: 1,
   name: "Ekstrakcja faktów",
   // Koszt wywołania i wybór modelu to sprawa dewelopera — nie stoi na karcie.
   description: "Wyciąga z umowy wskazane dane. Przepisuje to, co w niej stoi — nic nie liczy.",
