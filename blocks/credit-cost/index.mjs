@@ -10,8 +10,8 @@
 
 // Model bywa, że zwraca datę po polsku mimo instrukcji — a blok terminu i ten
 // muszą przeczytać tę samą datę tak samo, więc normalizacja jest wspólna.
-import { under } from "../../../src/case-context.mjs";
-import { normalizeDate } from "../../../src/dates.mjs";
+import { under } from "../../../src/contract/case-context.mjs";
+import { normalizeDate } from "../../../src/contract/dates.mjs";
 
 const round = (value, places = 2) => Math.round(value * 10 ** places) / 10 ** places;
 

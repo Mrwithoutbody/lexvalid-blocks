@@ -1,6 +1,6 @@
-import { under } from "../../../src/case-context.mjs";
-import { holds } from "../../../src/conditions.mjs";
-import { plural } from "../../../src/plural.mjs";
+import { under } from "../../../src/contract/case-context.mjs";
+import { holds } from "../../../src/contract/conditions.mjs";
+import { plural } from "../../../src/contract/plural.mjs";
 
 /**
  * Kwalifikacja — bramka przed płatną częścią pipeline'u, zero AI.

@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 
 import block from "./index.mjs";
-import { plural } from "../../../src/plural.mjs";
+import { plural } from "../../../src/contract/plural.mjs";
 import { runStep } from "../../../src/engine/index.mjs";
 
 // Mechanika operatorów stoi w `src/conditions.test.mjs` — wspólny język

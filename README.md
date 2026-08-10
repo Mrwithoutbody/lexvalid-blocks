@@ -23,14 +23,14 @@ Jak wtyczka WordPressa wymaga WordPressa, tak klocek wymaga hosta: importy
 
 | plik hosta | po co |
 | --- | --- |
-| `src/case-context.mjs` | model danych: ścieżki, przestrzenie, `under()` |
-| `src/conditions.mjs` | wspólny język warunków |
-| `src/dates.mjs` | normalizacja dat |
-| `src/plural.mjs` | odmiana przez liczbę w tekstach dla człowieka |
+| `src/contract/case-context.mjs` | model danych: ścieżki, przestrzenie, `under()` |
+| `src/contract/conditions.mjs` | wspólny język warunków |
+| `src/contract/dates.mjs` | normalizacja dat |
+| `src/contract/plural.mjs` | odmiana przez liczbę w tekstach dla człowieka |
 | `src/engine/index.mjs` | `runStep` — wyłącznie w testach klocka |
 
 Reszta `src/` to wnętrze hosta. Klocek dostaje wycinek kontekstu właśnie po to,
-żeby nie musiał sięgać do bazy ani do kubełka — `src/engine-isolation.test.mjs`
+żeby nie musiał sięgać do bazy ani do kubełka — `src/guards/engine-isolation.test.mjs`
 po stronie hosta czyta importy i zapala się na każdym wyjściu poza tę listę. Testy klocków uruchamia host — `npm test`
 w jego korzeniu.
 

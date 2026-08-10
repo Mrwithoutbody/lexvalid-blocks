@@ -19,8 +19,8 @@
  * data, mówi `zrodlo_daty_splaty` — i nie wolno tego zgubić po drodze.
  */
 
-import { under } from "../../../src/case-context.mjs";
-import { addMonths, normalizeDate, toUtc } from "../../../src/dates.mjs";
+import { under } from "../../../src/contract/case-context.mjs";
+import { addMonths, normalizeDate, toUtc } from "../../../src/contract/dates.mjs";
 
 const DOBA_MS = 86_400_000;
 

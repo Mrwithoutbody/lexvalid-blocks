@@ -1,4 +1,4 @@
-import { under } from "../../../src/case-context.mjs";
+import { under } from "../../../src/contract/case-context.mjs";
 
 /**
  * Jedno wywołanie LLM: wyciągnięcie wskazanych pól jako JSON.

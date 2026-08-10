@@ -1,6 +1,6 @@
-import { valueAt } from "../../../src/case-context.mjs";
-import { holds, OPERATORS, referencedPaths } from "../../../src/conditions.mjs";
-import { plural } from "../../../src/plural.mjs";
+import { valueAt } from "../../../src/contract/case-context.mjs";
+import { holds, OPERATORS, referencedPaths } from "../../../src/contract/conditions.mjs";
+import { plural } from "../../../src/contract/plural.mjs";
 
 /**
  * Pismo z szablonu — mechanizm w kodzie, treść w danych.

@@ -10,9 +10,9 @@
  * (`calculations`) — sam nic nie liczy i nie pyta modelu.
  */
 
-import { under, valueAt } from "../../../src/case-context.mjs";
-import { holds, referencedPaths } from "../../../src/conditions.mjs";
-import { plural } from "../../../src/plural.mjs";
+import { under, valueAt } from "../../../src/contract/case-context.mjs";
+import { holds, referencedPaths } from "../../../src/contract/conditions.mjs";
+import { plural } from "../../../src/contract/plural.mjs";
 
 // Operatory z warunku pozycji — podzbiór wspólnego języka, który ma tu sens.
 // `<` zostaje za drzwiami, póki nie przyniesie go druga pozycja checklisty:
