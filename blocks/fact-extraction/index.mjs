@@ -33,7 +33,10 @@ export const fields = (step) =>
       throw new Error(`kropka w nazwie pola „${id}" — ekstrakcja nie tworzy zagnieżdżeń`);
     }
 
-    return { id, opis: field.opis ?? null };
+    // `wymagane` mówi, że bez tej wartości dalsze kroki nie mają czego liczyć,
+    // więc brak w dokumencie ma być PYTANIEM do człowieka, nie awarią. Które
+    // pola są takie, zależy od rodzaju sprawy, nie od mechanizmu — stąd dane.
+    return { id, opis: field.opis ?? null, wymagane: field.wymagane === true, typ: field.typ ?? "kwota" };
   });
 
 export const fieldNames = (step) => fields(step).map((field) => field.id);
@@ -115,6 +118,29 @@ export default {
   icon: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
   requires: ["text.safe"],
 
+  // Odpowiedzi na dopytanie o pola, których w dokumencie nie było. Odczyt
+  // miękki: przy pierwszym przebiegu jeszcze ich nie ma i to nie jest błąd.
+  reads: (step) => fields(step).filter((f) => f.wymagane).map((f) => `answers.${f.id}`),
+
+  /**
+   * Pola wymagane stoją w formularzu, ale z `naZadanie` — czyli nikt o nie nie
+   * pyta z góry. Najpierw próbuje ich odczytać model; dopiero gdy w dokumencie
+   * ich nie ma, blok prosi o nie wprost (`error.pyta`).
+   *
+   * Deklaracja musi tu być mimo to: silnik wpuszcza do `answers.` wyłącznie
+   * odpowiedzi na pola, które jakiś blok zapowiedział w `form` — bez tego
+   * wpisana ręcznie kwota nie miałaby jak wrócić do przebiegu.
+   */
+  form: (step) =>
+    fields(step)
+      .filter((field) => field.wymagane)
+      .map((field) => ({
+        id: field.id,
+        label: field.opis ? `${field.id.replace(/_/g, " ")} — ${field.opis}` : field.id.replace(/_/g, " "),
+        type: field.typ,
+        naZadanie: true,
+      })),
+
   // Wydaje dokładnie te pola, o które kazano zapytać — dzięki temu checklista
   // może wymagać `facts.kaucja`, a literówka w jej warunku zatrzyma pipeline
   // zamiast wyglądać jak brak tej informacji w umowie.
@@ -138,8 +164,19 @@ export default {
    * a licząc skrót trzeba by wybrać funkcję i pilnować, żeby nie stała się
    * cichym identyfikatorem dokumentu.
    */
+  // ponytail: odpowiedzi wchodzą do klucza, więc wpisanie brakującej wartości
+  // ręcznie kosztuje JEDNO dodatkowe wywołanie modelu (klucz się zmienia,
+  // a poprzedni przebieg i tak nie zdążył zapisać memo, bo przerwał na
+  // pytaniu). Upgrade: rozdzielić klucz modelu od klucza scalenia, gdy
+  // dopytania staną się częste.
   memoKey: (ctx, step) =>
-    JSON.stringify([step.model ?? null, fields(step), (ctx.text?.safe ?? "").length, ctx.text?.safe]),
+    JSON.stringify([
+      step.model ?? null,
+      fields(step),
+      (ctx.text?.safe ?? "").length,
+      ctx.text?.safe,
+      Object.fromEntries(fields(step).filter((f) => f.wymagane).map((f) => [f.id, ctx.answers?.[f.id] ?? null])),
+    ]),
 
   /**
    * Wkład do interfejsu: zaznaczenie cytatu-dowodu przy każdym odczytanym
@@ -248,6 +285,47 @@ export default {
     const sent = ctx.text.safe.slice(0, LIMIT);
     const { facts, evidence, fabricated } = factsFrom(raw, wanted, sent);
 
+    /**
+     * Pole wymagane, którego w dokumencie nie ma — umowa odsyła kwotę raty do
+     * załączonego harmonogramu, a ten nie jest częścią akt. Odpowiedź człowieka
+     * podstawiamy w miejsce braku i mówimy o tym wprost: dowód zostaje pusty
+     * ze wskazaniem źródła, więc raport nie udaje, że to odczyt z umowy.
+     *
+     * Ekstrakcja pozostaje JEDYNYM piszącym w `facts.` — człowiek odpowiada
+     * pod `answers.`, a to ten blok rozstrzyga, co z tego wynika.
+     */
+    const wpisane = [];
+    const doPytania = [];
+
+    for (const field of asked.filter((f) => f.wymagane)) {
+      if (facts[field.id] !== null && facts[field.id] !== undefined) continue;
+
+      const odpowiedz = ctx.answers?.[field.id];
+      if (odpowiedz === undefined || odpowiedz === null || odpowiedz === "") {
+        doPytania.push(field);
+        continue;
+      }
+
+      facts[field.id] = odpowiedz;
+      evidence[field.id] = { cytat: null, strona: null, zrodlo: "wpisane ręcznie" };
+      wpisane.push(field.id);
+    }
+
+    if (doPytania.length) {
+      const brak = new Error(
+        `dokument nie zawiera: ${doPytania.map((f) => f.id.replace(/_/g, " ")).join(", ")} — wpisz ręcznie`,
+      );
+      // Silnik zamieni to na pytanie do człowieka, nie na awarię.
+      brak.pyta = doPytania.map((field) => ({
+        id: field.id,
+        label: field.opis ? `${field.id.replace(/_/g, " ")} — ${field.opis}` : field.id.replace(/_/g, " "),
+        type: field.typ,
+      }));
+      // To, co model zdążył odczytać, ma zostać w kontekście i w raporcie.
+      brak.values = { ...under("facts", facts), ...under("evidence", evidence) };
+      throw brak;
+    }
+
     const unexpected = Object.keys(raw).filter((k) => !wanted.includes(k));
     const cited = Object.values(evidence).filter(Boolean).length;
 
@@ -259,6 +337,9 @@ export default {
       // Zmyślony cytat wygląda jak dowód — jego odrzucenie musi być widoczne,
       // bo wartość została i teraz stoi bez pokrycia.
       fabricated.length && `cytaty spoza tekstu odrzucone: ${fabricated.join(", ")}`,
+      // Wartość wpisana ręcznie nie ma cytatu w umowie, więc ślad musi o niej
+      // powiedzieć — inaczej „12/14 faktów z cytatem" czyta się jak komplet.
+      wpisane.length && `wpisane ręcznie: ${wpisane.join(", ")}`,
     ].filter(Boolean);
 
     const usage = `${body.usage.prompt_tokens} in / ${body.usage.completion_tokens} out`;
